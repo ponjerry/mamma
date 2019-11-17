@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mamma/channel/sound_channel.dart';
 
@@ -30,6 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // TODO(wonjerry): Add speaking start, stop log
   List<String> _logs = [];
   bool _isRecording = false;
+  StreamSubscription _speakingSubscription;
 
   void _clear() {
     setState(() {
@@ -42,6 +45,22 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _isRecording = !_isRecording;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _speakingSubscription = SoundChannel().speakingStateStream.listen((speaking) {
+      setState(() {
+        _logs.add(speaking ? '말하는중...' : '!!!!!!!!!!끝!!!!!!!!!!');
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _speakingSubscription?.cancel();
+    super.dispose();
   }
 
   @override

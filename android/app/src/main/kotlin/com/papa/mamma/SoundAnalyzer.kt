@@ -5,42 +5,33 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Process
 import android.util.Log
+import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-class SoundAnalyzer(private val listener: AudioDataListener) {
+class SoundAnalyzer {
 
   companion object {
     private const val TAG = "SoundAnalyzer"
     // TODO(hyungsun): Make this configurable.
     private const val SAMPLE_RATE = 44100
     // TODO(hyungsun): Make this configurable.
-    private const val AMPLITUDE_THRESHOLD = 1500
+    private const val AMPLITUDE_THRESHOLD = 1000
   }
 
-  interface AudioDataListener {
+  val audioDataSubject: PublishSubject<Pair<ByteArray, Int>> =
+    PublishSubject.create<Pair<ByteArray, Int>>()
 
-    /**
-     * Called when the recorder starts hearing voice.
-     */
-    fun onRecordingStart() {}
-
-
-    /**
-     * Called when the recorder stops hearing voice.
-     */
-    fun onRecordingStop() {}
-
-    /**
-     * Called when the recorder is hearing voice.
-     *
-     * @param rawData The audio data in [AudioFormat.ENCODING_PCM_16BIT].
-     * @param size The size of the actual data in `data`.
-     */
-    fun onAudioDataReceived(rawData: ByteArray, size: Int)
+  /**
+   * Check if voice is recording.
+   *
+   * @param audioData Pair of audio data. See [isSpeaking].
+   */
+  fun isSpeaking(audioData: Pair<ByteArray, Int>): Boolean {
+    return isSpeaking(audioData.first, audioData.second)
   }
 
   /**
@@ -53,12 +44,12 @@ class SoundAnalyzer(private val listener: AudioDataListener) {
     val amplitudes = mutableListOf<Int>()
     for (i in 0 until size - 1 step 2) {
       // NOTE: The buffer has LINEAR16 in little endian.
-      var s = rawData[i + 1].toInt()
-      if (s < 0)
-        s *= -1
-      s = s.shl(8)
-      s += abs(rawData[i].toInt())
-      amplitudes.add(s)
+      var amplitude = rawData[i + 1].toInt()
+      if (amplitude < 0)
+        amplitude *= -1
+      amplitude = amplitude.shl(8)
+      amplitude += abs(rawData[i].toInt())
+      amplitudes.add(amplitude)
     }
     return amplitudes.average() > AMPLITUDE_THRESHOLD
   }
@@ -99,8 +90,6 @@ class SoundAnalyzer(private val listener: AudioDataListener) {
       Log.d(TAG, "Cannot start recording: $exception")
     }
 
-    listener.onRecordingStart()
-
     recordingJob = GlobalScope.launch {
       Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
 
@@ -111,7 +100,7 @@ class SoundAnalyzer(private val listener: AudioDataListener) {
           AudioRecord.ERROR,
           AudioRecord.ERROR_BAD_VALUE,
           AudioRecord.ERROR_DEAD_OBJECT -> continue@loop
-          else -> listener.onAudioDataReceived(audioBuffer, size)
+          else -> audioDataSubject.onNext(Pair(audioBuffer, size))
         }
       }
     }
@@ -130,7 +119,6 @@ class SoundAnalyzer(private val listener: AudioDataListener) {
 
     recordingJob = null
 
-    listener.onRecordingStop()
     Log.d(TAG, "Recording stopped")
   }
 

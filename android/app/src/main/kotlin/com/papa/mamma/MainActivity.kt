@@ -3,38 +3,32 @@ package com.papa.mamma
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.app.FlutterActivity
 import io.flutter.plugins.GeneratedPluginRegistrant
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
-class MainActivity : FlutterActivity(), SoundAnalyzer.AudioDataListener {
+class MainActivity : FlutterActivity() {
 
   companion object {
-    const val TAG = "MainActivity"
+    private const val ROOT_CHANNEL_NAME = "com.papa.mamma"
     const val REQUEST_RECORD_AUDIO_PERMISSION = 1111
   }
 
-  private val soundAnalyzer = SoundAnalyzer(this)
+  private val soundAnalyzer = SoundAnalyzer()
   private var delayingJob: Job? = null
+  private val flutterChannel = FlutterChannel()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     GeneratedPluginRegistrant.registerWith(this)
 
-    if (requestPermissionIfNeeded()) {
-      soundAnalyzer.startRecording()
-    }
+    // TODO(hyungsun): Request permission in flutter not native.
+    requestPermissionIfNeeded()
 
-    delayInBackground(TimeUnit.SECONDS.toMillis(10L)) {
-      soundAnalyzer.stopRecording()
-    }
+    flutterChannel.setSubChannel("sound", FlutterSoundChannel(soundAnalyzer))
+    flutterChannel.setup(ROOT_CHANNEL_NAME, flutterView)
   }
 
   override fun onStop() {
@@ -50,6 +44,8 @@ class MainActivity : FlutterActivity(), SoundAnalyzer.AudioDataListener {
     soundAnalyzer.terminate()
     delayingJob?.cancel()
     delayingJob = null
+
+    flutterChannel.dispose()
   }
 
   override fun onRequestPermissionsResult(
@@ -60,10 +56,6 @@ class MainActivity : FlutterActivity(), SoundAnalyzer.AudioDataListener {
     if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
       soundAnalyzer.startRecording()
     }
-  }
-
-  override fun onAudioDataReceived(rawData: ByteArray, size: Int) {
-    Log.d(TAG, "isSpeaking: ${soundAnalyzer.isSpeaking(rawData, size)}")
   }
 
   private fun requestPermissionIfNeeded(): Boolean {
@@ -77,13 +69,6 @@ class MainActivity : FlutterActivity(), SoundAnalyzer.AudioDataListener {
           REQUEST_RECORD_AUDIO_PERMISSION
       )
       false
-    }
-  }
-
-  private fun delayInBackground(delayInMillis: Long, callback: () -> Unit) {
-    delayingJob = GlobalScope.launch {
-      delay(delayInMillis)
-      callback()
     }
   }
 }

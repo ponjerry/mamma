@@ -3,6 +3,7 @@ package com.papa.mamma
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.app.FlutterActivity
@@ -13,13 +14,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterActivity(), SoundAnalyzer.AudioDataListener {
 
   companion object {
+    const val TAG = "MainActivity"
     const val REQUEST_RECORD_AUDIO_PERMISSION = 1111
   }
 
-  private val soundAnalyzer = SoundAnalyzer()
+  private val soundAnalyzer = SoundAnalyzer(this)
   private var delayingJob: Job? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +60,10 @@ class MainActivity : FlutterActivity() {
     if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
       soundAnalyzer.startRecording()
     }
+  }
+
+  override fun onAudioDataReceived(rawData: ByteArray, size: Int) {
+    Log.d(TAG, "isSpeaking: ${soundAnalyzer.isSpeaking(rawData, size)}")
   }
 
   private fun requestPermissionIfNeeded(): Boolean {

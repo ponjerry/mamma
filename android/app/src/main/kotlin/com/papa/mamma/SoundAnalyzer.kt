@@ -9,19 +9,59 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
-class SoundAnalyzer {
+class SoundAnalyzer(private val listener: AudioDataListener) {
 
   companion object {
     private const val TAG = "SoundAnalyzer"
+    // TODO(hyungsun): Make this configurable.
     private const val SAMPLE_RATE = 44100
+    // TODO(hyungsun): Make this configurable.
+    private const val AMPLITUDE_THRESHOLD = 1500
+  }
+
+  interface AudioDataListener {
+
+    /**
+     * Called when the recorder starts hearing voice.
+     */
+    fun onRecordingStart() {}
+
+
+    /**
+     * Called when the recorder stops hearing voice.
+     */
+    fun onRecordingStop() {}
+
+    /**
+     * Called when the recorder is hearing voice.
+     *
+     * @param rawData The audio data in [AudioFormat.ENCODING_PCM_16BIT].
+     * @param size The size of the actual data in `data`.
+     */
+    fun onAudioDataReceived(rawData: ByteArray, size: Int)
   }
 
   /**
-   * List of sampling data which is pair made up of elapsed time in millis and sampled amplitude
-   * while recording.
+   * Check if voice is recording.
+   *
+   * @param rawData The audio data in [AudioFormat.ENCODING_PCM_16BIT].
+   * @param size The size of the actual data in `data`.
    */
-  val audioBuffer = mutableListOf<Pair<Long, Int>>()
+  fun isSpeaking(rawData: ByteArray, size: Int): Boolean {
+    val amplitudes = mutableListOf<Int>()
+    for (i in 0 until size - 1 step 2) {
+      // NOTE: The buffer has LINEAR16 in little endian.
+      var s = rawData[i + 1].toInt()
+      if (s < 0)
+        s *= -1
+      s = s.shl(8)
+      s += abs(rawData[i].toInt())
+      amplitudes.add(s)
+    }
+    return amplitudes.average() > AMPLITUDE_THRESHOLD
+  }
 
   private val incomeBufferSize = AudioRecord
       .getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
@@ -44,10 +84,8 @@ class SoundAnalyzer {
 
   /**
    * Start recording in background.
-   *
-   * @param clearBuffer If true, clear `audioBuffer`. Default: true
    */
-  fun startRecording(clearBuffer: Boolean = true) {
+  fun startRecording() {
     if (recordingJob != null) {
       Log.d(TAG, "Abort job: Already recording.")
       return
@@ -61,26 +99,19 @@ class SoundAnalyzer {
       Log.d(TAG, "Cannot start recording: $exception")
     }
 
-    if (clearBuffer) {
-      clearBuffer()
-    }
+    listener.onRecordingStart()
 
     recordingJob = GlobalScope.launch {
       Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
 
-      val startAt = System.currentTimeMillis()
-      val audioBuffer = ShortArray(incomeBufferSize / 2)
+      val audioBuffer = ByteArray(incomeBufferSize / 2)
       loop@ while (isActive) {
-        when (recorder.read(audioBuffer, 0, audioBuffer.size)) {
+        when (val size = recorder.read(audioBuffer, 0, audioBuffer.size)) {
           AudioRecord.ERROR_INVALID_OPERATION,
           AudioRecord.ERROR,
           AudioRecord.ERROR_BAD_VALUE,
           AudioRecord.ERROR_DEAD_OBJECT -> continue@loop
-          else -> {
-            val data = Pair(System.currentTimeMillis() - startAt, audioBuffer.sum())
-            this@SoundAnalyzer.audioBuffer.add(data)
-            Log.d(TAG, "data: $data")
-          }
+          else -> listener.onAudioDataReceived(audioBuffer, size)
         }
       }
     }
@@ -91,21 +122,16 @@ class SoundAnalyzer {
    */
   fun stopRecording() {
     recordingJob?.cancel()
-    recorder.stop()
-    recordingJob = null
-    Log.d(TAG, "Recording stopped")
-  }
-
-  /**
-   * Clear `audioBuffer`.
-   */
-  @Throws(RuntimeException::class)
-  fun clearBuffer() {
-    if (recordingJob != null) {
-      throw RuntimeException("Cannot clear buffer while recording.")
+    try {
+      recorder.stop()
+    } catch (exception: IllegalStateException) {
+      // In case `startRecording` is not called but `stopRecording` is called, do nothing.
     }
 
-    audioBuffer.clear()
+    recordingJob = null
+
+    listener.onRecordingStop()
+    Log.d(TAG, "Recording stopped")
   }
 
   /**

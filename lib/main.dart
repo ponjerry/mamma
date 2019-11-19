@@ -33,7 +33,6 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> _logs = [];
   bool _isRecording = false;
   StreamSubscription _speakingSubscription;
-  ScrollController _scrollController = ScrollController();
 
   void _clear() {
     setState(() {
@@ -55,11 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _logs.add(speaking ? '말하는중...' : '!!!!!!!!!!끝!!!!!!!!!!');
       });
-      _scrollController.animateTo(
-        10000.0,
-        duration: const Duration(milliseconds: 10),
-        curve: Curves.easeOut,
-      );
     });
   }
 
@@ -87,8 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: ListView.builder(
-          reverse: true,
-          controller: _scrollController,
           itemCount: _logs.length,
           itemBuilder: (BuildContext context, int index) {
             return Text(

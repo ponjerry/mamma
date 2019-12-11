@@ -1,12 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mamma/enums/route_type.dart';
 import 'package:mamma/pages/splash_page.dart';
 import 'package:mamma/pages/voice_check_page.dart';
+import 'package:mamma/repositories/user_repository.dart';
 
-void main() => runApp(MyApp());
+import 'bloc/authentication_bloc/bloc.dart';
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  final UserRepository userRepository = UserRepository();
+  runApp(
+    BlocProvider(
+      create: (context) => AuthenticationBloc(userRepository: userRepository)..add(AppStarted()),
+      child: MammaApp(userRepository: userRepository),
+    ),
+  );
+}
+
+class MammaApp extends StatelessWidget {
+  final UserRepository _userRepository;
+
+  MammaApp({Key key, @required UserRepository userRepository})
+      : assert(userRepository != null),
+        _userRepository = userRepository,
+        super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

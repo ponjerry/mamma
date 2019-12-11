@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "41925932932",
+    "firebase_url": "https://mamma-1e16f.firebaseio.com",
+    "project_id": "mamma-1e16f",
+    "storage_bucket": "mamma-1e16f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:41925932932:android:69b4a50a0f7c9dfc828fd1",
+        "android_client_info": {
+          "package_name": "com.papa.mamma"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "41925932932-rlso9052te1ocprre88svl86ge94ru6e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOcnvwTlcKxNvwfQ4k8CNx4ywdZMca3Ro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "41925932932-rlso9052te1ocprre88svl86ge94ru6e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "41925932932-daijr47g8sshp3d7hdat2i6ruof25u2t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.papa.mamma"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

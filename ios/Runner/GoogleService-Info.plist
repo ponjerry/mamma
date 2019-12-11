@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>41925932932-daijr47g8sshp3d7hdat2i6ruof25u2t.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.41925932932-daijr47g8sshp3d7hdat2i6ruof25u2t</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAsgz03YRkfXqZ2UH2t4g_nmkXhcD6PbDg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>41925932932</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.papa.mamma</string>
+	<key>PROJECT_ID</key>
+	<string>mamma-1e16f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>mamma-1e16f.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:41925932932:ios:f90c72a2a6f7a56a828fd1</string>
+	<key>DATABASE_URL</key>
+	<string>https://mamma-1e16f.firebaseio.com</string>
+</dict>
+</plist>

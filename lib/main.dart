@@ -1,6 +1,9 @@
+import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mamma/bloc/mamma_bloc_delegate.dart';
 import 'package:mamma/enums/route_type.dart';
+import 'package:mamma/pages/auth_login_page.dart';
 import 'package:mamma/pages/splash_page.dart';
 import 'package:mamma/pages/voice_check_page.dart';
 import 'package:mamma/repositories/user_repository.dart';
@@ -9,6 +12,7 @@ import 'bloc/authentication_bloc/bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  BlocSupervisor.delegate = MammaBlocDelegate();
   final UserRepository userRepository = UserRepository();
   runApp(
     BlocProvider(
@@ -37,7 +41,21 @@ class MammaApp extends StatelessWidget {
         RouteType.splashPage: (context) => const SplashPage(),
         RouteType.voiceCheckPage: (context) => const VoiceCheckPage(),
       }.map((routeType, page) => MapEntry(toRouteName(routeType), page)),
-      home: const SplashPage(),
+      home: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context,  state) {
+          if (state is Uninitialized) {
+            return const SplashPage();
+          }
+
+          if (state is Unauthenticated) {
+            return LoginScreen(userRepository: _userRepository);
+          }
+
+          if (state is Authenticated) {
+            return const VoiceCheckPage();
+          }
+        },
+      ),
     );
   }
 }

@@ -14,12 +14,6 @@ class _SplashPageState extends BasePageState<SplashPage> {
   String get title => 'Splash page';
 
   @override
-  void onPostLoad() {
-    gotoPage(RouteType.voiceCheckPage);
-    return super.onPostLoad();
-  }
-
-  @override
   Widget buildContents(BuildContext context) {
     return SafeArea(
       child: Container(

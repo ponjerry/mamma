@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mamma/bloc/authentication_bloc/bloc.dart';
 import 'package:mamma/bloc/login_bloc/bloc.dart';
+import 'package:mamma/bloc/register_bloc/bloc.dart';
 import 'package:mamma/repositories/user_repository.dart';
 import 'package:mamma/widgets/google_login_button.dart';
 import 'package:mamma/widgets/login_button.dart';
@@ -58,40 +59,82 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LoginBloc, LoginState>(
-      listener: (context, state) {
-        if (state.isFailure) {
-          Scaffold.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [Text('Login Failure'), Icon(Icons.error)],
-                ),
-                backgroundColor: Colors.red,
-              ),
-            );
-        }
-        if (state.isSubmitting) {
-          Scaffold.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Logging In...'),
-                    CircularProgressIndicator(),
-                  ],
-                ),
-              ),
-            );
-        }
-        if (state.isSuccess) {
-          BlocProvider.of<AuthenticationBloc>(context).add(LoggedIn());
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<LoginBloc, LoginState>(
+          listener: (context, state) {
+            if (state.isFailure) {
+              Scaffold.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [Text('Login Failure'), Icon(Icons.error)],
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+            }
+            if (state.isSubmitting) {
+              Scaffold.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Logging In...'),
+                        CircularProgressIndicator(),
+                      ],
+                    ),
+                  ),
+                );
+            }
+            if (state.isRegisterRequired) {
+              BlocProvider.of<RegisterBloc>(context).add(Registered());
+            }
+            if (state.isSuccess) {
+              BlocProvider.of<AuthenticationBloc>(context).add(LoggedIn());
+            }
+          },
+        ),
+        BlocListener<RegisterBloc, RegisterState>(
+          listener: (context, state) {
+            if (state.isSubmitting) {
+              Scaffold.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Registering In...'),
+                        CircularProgressIndicator(),
+                      ],
+                    ),
+                  ),
+                );
+            }
+            if (state.isFailure) {
+              Scaffold.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [Text('Register Failure'), Icon(Icons.error)],
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+            }
+            if (state.isSuccess) {
+              BlocProvider.of<AuthenticationBloc>(context).add(LoggedIn());
+            }
+          }
+        ),
+      ],
       child: BlocBuilder<LoginBloc, LoginState>(
         builder: (context, state) {
           return Padding(
@@ -137,7 +180,6 @@ class _LoginFormState extends State<LoginForm> {
                           onPressed: isLoginButtonEnabled(state) ? _onFormSubmitted : null,
                         ),
                         GoogleLoginButton(),
-                        // CreateAccountButton(userRepository: _userRepository),
                       ],
                     ),
                   ),

@@ -42,7 +42,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   }
 
   Stream<AuthenticationState> _mapLoggedInToState() async* {
-    yield Authenticated(await _userRepository.getUser());
+    final user = await _userRepository.getUser();
+    assert(user != null);
+    yield Authenticated(user);
   }
 
   Stream<AuthenticationState> _mapLoggedOutToState() async* {

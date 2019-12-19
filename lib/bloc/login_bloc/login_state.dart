@@ -5,6 +5,7 @@ class LoginState {
   final bool isEmailValid;
   final bool isPasswordValid;
   final bool isSubmitting;
+  final bool isRegisterRequired;
   final bool isSuccess;
   final bool isFailure;
 
@@ -14,6 +15,7 @@ class LoginState {
     @required this.isEmailValid,
     @required this.isPasswordValid,
     @required this.isSubmitting,
+    @required this.isRegisterRequired,
     @required this.isSuccess,
     @required this.isFailure,
   });
@@ -23,6 +25,7 @@ class LoginState {
       isEmailValid: true,
       isPasswordValid: true,
       isSubmitting: false,
+      isRegisterRequired: false,
       isSuccess: false,
       isFailure: false,
     );
@@ -33,6 +36,18 @@ class LoginState {
       isEmailValid: true,
       isPasswordValid: true,
       isSubmitting: true,
+      isRegisterRequired: false,
+      isSuccess: false,
+      isFailure: false,
+    );
+  }
+
+  factory LoginState.registerRequired() {
+    return LoginState(
+      isEmailValid: true,
+      isPasswordValid: true,
+      isSubmitting: true,
+      isRegisterRequired: true,
       isSuccess: false,
       isFailure: false,
     );
@@ -43,6 +58,7 @@ class LoginState {
       isEmailValid: true,
       isPasswordValid: true,
       isSubmitting: false,
+      isRegisterRequired: false,
       isSuccess: false,
       isFailure: true,
     );
@@ -53,6 +69,7 @@ class LoginState {
       isEmailValid: true,
       isPasswordValid: true,
       isSubmitting: false,
+      isRegisterRequired: false,
       isSuccess: true,
       isFailure: false,
     );
@@ -66,6 +83,7 @@ class LoginState {
       isEmailValid: isEmailValid,
       isPasswordValid: isPasswordValid,
       isSubmitting: false,
+      isRegisterRequired: false,
       isSuccess: false,
       isFailure: false,
     );
@@ -76,6 +94,7 @@ class LoginState {
     bool isPasswordValid,
     bool isSubmitEnabled,
     bool isSubmitting,
+    bool isRegisterRequired,
     bool isSuccess,
     bool isFailure,
   }) {
@@ -83,6 +102,7 @@ class LoginState {
       isEmailValid: isEmailValid ?? this.isEmailValid,
       isPasswordValid: isPasswordValid ?? this.isPasswordValid,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      isRegisterRequired: isRegisterRequired ?? this.isRegisterRequired,
       isSuccess: isSuccess ?? this.isSuccess,
       isFailure: isFailure ?? this.isFailure,
     );
@@ -94,6 +114,7 @@ class LoginState {
       isEmailValid: $isEmailValid,
       isPasswordValid: $isPasswordValid,
       isSubmitting: $isSubmitting,
+      isRegisterRequired: $isRegisterRequired,
       isSuccess: $isSuccess,
       isFailure: $isFailure,
     }''';
